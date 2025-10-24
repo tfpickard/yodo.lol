@@ -39,22 +39,32 @@ class OpenAIService {
    */
   private safeJsonParse<T>(content: string, fallback: T): T {
     try {
+      // Check if content is empty or null
+      if (!content || content.trim() === '') {
+        console.error('JSON content is empty');
+        return fallback;
+      }
+
       // Try direct parse first
       return JSON.parse(content) as T;
     } catch (error) {
       try {
         // Try to fix common JSON issues
         let fixed = content
-          // Remove control characters
-          .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
-          // Fix unescaped quotes (basic attempt)
-          .replace(/([^\\])"([^"]*)":/g, '$1\\"$2":')
-          // Remove trailing commas
-          .replace(/,(\s*[}\]])/g, '$1');
+          // Remove BOM and other leading/trailing whitespace issues
+          .trim()
+          .replace(/^\uFEFF/, '')
+          // Remove control characters except newlines and tabs
+          .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+          // Remove trailing commas before closing braces/brackets
+          .replace(/,(\s*[}\]])/g, '$1')
+          // Fix common quote issues in strings (but not keys)
+          .replace(/\\'/g, "'");
 
         return JSON.parse(fixed) as T;
       } catch (secondError) {
         console.error('JSON parse failed even after sanitization:', secondError);
+        console.error('Content preview:', content.substring(0, 100));
         return fallback;
       }
     }
@@ -103,9 +113,19 @@ NO RULES. NO TASTE. ONLY CHAOS. BUT VALID JSON!`,
       });
 
       const content = completion.choices[0]?.message?.content;
-      if (!content) throw new Error('No response from OpenAI');
+      if (!content) {
+        console.error('No content from OpenAI for theme generation');
+        return this.getDefaultTheme();
+      }
 
       const theme = this.safeJsonParse<DesignTheme>(content, this.getDefaultTheme());
+
+      // Validate theme has required properties
+      if (!theme.primaryColor || !theme.layoutStyle) {
+        console.error('Invalid theme structure, using default');
+        return this.getDefaultTheme();
+      }
+
       return theme;
     } catch (error) {
       console.error('Error generating design theme:', error);
@@ -161,10 +181,29 @@ EACH CAPTION FROM DIFFERENT REALITY. ABSURD. UNSETTLING. UNCOMFORTABLE. FERAL. B
       });
 
       const content = completion.choices[0]?.message?.content;
-      if (!content) throw new Error('No response from OpenAI');
+      if (!content) {
+        console.error('No content from OpenAI for post enhancement');
+        return posts.map(post => ({
+          ...post,
+          aiCaption: this.getDefaultCaption(),
+          aiPersonality: 'mysterious entity',
+          mood: 'enigmatic',
+        }));
+      }
 
       const result = this.safeJsonParse<{ posts: any[] }>(content, { posts: [] });
-      const aiPosts = result.posts || [];
+
+      if (!result || !Array.isArray(result.posts)) {
+        console.error('Invalid response structure from OpenAI');
+        return posts.map(post => ({
+          ...post,
+          aiCaption: this.getDefaultCaption(),
+          aiPersonality: 'confused AI',
+          mood: 'uncertain',
+        }));
+      }
+
+      const aiPosts = result.posts;
 
       return posts.map((post, idx) => {
         const aiData = aiPosts.find((p: any) => p.index === idx + 1) || {};

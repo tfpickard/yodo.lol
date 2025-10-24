@@ -20,6 +20,38 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
   const [currentTitle, setCurrentTitle] = useState('¥ØĐØ.ŁØŁ');
   const [currentSubtitle, setCurrentSubtitle] = useState('AI-Powered Psychedelic Nightmare Feed');
 
+  // Occult, alchemical, astronomical symbols and obscure emojis for buttons
+  const voidSymbols = [
+    '🜏 ⛤ ☿ 🝚', '⛧ ☾ ♆ 🜨', '🜍 ⚛ ☄ ⸙', '☊ 🜔 ⛢ 🝝',
+    '♇ ⚗ 🜃 ⸚', '🝱 ☌ 🜑 ⛥', '☋ 🜘 ♅ 🝢', '⚚ ☽ 🜦 ⸜',
+  ];
+
+  const chaosSymbols = [
+    '🜂 ⚸ ☿ 🝛', '⛦ ♂ 🜓 ⸏', '🜎 ☄ ⚕ 🝞', '⛧ 🜕 ♃ ⸝',
+    '☊ ⚛ 🜡 🝣', '🜄 ⛤ ☌ ⚜', '♄ 🜗 ⚹ 🝤', '⚡︎ 🜚 ☋ 🗲',
+  ];
+
+  const warpSymbols = [
+    '🜁 ⛥ ♀ 🝜', '☽ 🜒 ⚝ ⸎', '🜏 ♆ ⚞ 🝥', '⛢ 🜖 ☿ ⚟',
+    '🜃 ♇ ⚘ 🝦', '⚛ 🜙 ⛧ 🝠', '☾ 🜤 ♅ ⸙', '🜨 ⚗ ☌ 🝧',
+  ];
+
+  const [voidSymbol, setVoidSymbol] = useState(voidSymbols[0]);
+  const [chaosSymbol, setChaosSymbol] = useState(chaosSymbols[0]);
+  const [warpSymbol, setWarpSymbol] = useState(warpSymbols[0]);
+
+  // Rotate symbols every 2 seconds for maximum mysticism
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVoidSymbol(voidSymbols[Math.floor(Math.random() * voidSymbols.length)]);
+      setChaosSymbol(chaosSymbols[Math.floor(Math.random() * chaosSymbols.length)]);
+      setWarpSymbol(warpSymbols[Math.floor(Math.random() * warpSymbols.length)]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Title variations - misspellings and different extensions
   const titleVariations = [
     '¥ØĐØ.ŁØŁ',
@@ -219,40 +251,40 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
           <button
             onClick={refreshAll}
             disabled={isRefreshing || isThemeChanging}
-            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
+            className="px-6 py-3 rounded-lg font-semibold text-xl transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
             style={{
               backgroundColor: 'var(--primary-color)',
               color: 'var(--background-color)',
               borderRadius: 'var(--border-radius)',
             }}
           >
-            {isRefreshing ? '🔄 LOADING...' : '🎲 EMBRACE THE VOID'}
+            {isRefreshing ? '⚙ ⚙ ⚙' : voidSymbol}
           </button>
 
           <button
             onClick={refreshFeed}
             disabled={isRefreshing}
-            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
+            className="px-6 py-3 rounded-lg font-semibold text-xl transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
             style={{
               backgroundColor: 'var(--secondary-color)',
               color: 'var(--background-color)',
               borderRadius: 'var(--border-radius)',
             }}
           >
-            {isRefreshing ? '🔄 LOADING...' : '📱 MORE CHAOS'}
+            {isRefreshing ? '⚙ ⚙ ⚙' : chaosSymbol}
           </button>
 
           <button
             onClick={changeTheme}
             disabled={isThemeChanging}
-            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
+            className="px-6 py-3 rounded-lg font-semibold text-xl transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100"
             style={{
               backgroundColor: 'var(--accent-color)',
               color: 'var(--background-color)',
               borderRadius: 'var(--border-radius)',
             }}
           >
-            {isThemeChanging ? '✨ REALITY SHIFTING...' : '🎨 WARP REALITY'}
+            {isThemeChanging ? '⚙ ⚙ ⚙' : warpSymbol}
           </button>
         </div>
 
