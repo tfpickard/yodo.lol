@@ -1,47 +1,69 @@
 // Quirky, off-the-wall subreddits for unpredictable content
 const QUIRKY_SUBREDDITS = [
   // Original chaos
-  'hmmm',
-  'interdimensionalcable',
-  'WhatIsThisThing',
-  'CrappyDesign',
-  'ATBGE', // Awful Taste But Great Execution
-  'blursedimages',
-  'oddlysatisfying',
-  'mildlyinteresting',
-  'NotMyJob',
-  'Pareidolia',
-  'StockPhotos',
-  'oddlyspecific',
-  'BrandNewSentence',
-  'me_irl',
-  'surrealmemes',
-  'cursedcomments',
-  'BeAmazed',
-  'Damnthatsinteresting',
-  'DidntKnowIWantedThat',
-  'blackmagicfuckery',
-
+  "hmmm",
+  "interdimensionalcable",
+  "WhatIsThisThing",
+  "CrappyDesign",
+  "ATBGE", // Awful Taste But Great Execution
+  "blursedimages",
+  "oddlysatisfying",
+  "mildlyinteresting",
+  "NotMyJob",
+  "Pareidolia",
+  "oddlyspecific",
+  "BrandNewSentence",
+  "me_irl",
+  "surrealmemes",
+  "cursedcomments",
   // Expanded absurdity
-  'BreadStapledToTrees', // Bread stapled to trees. Literally.
-  'WeWantPlates', // Absurd plate presentation
-  'AssholeDesign', // Malicious design
-  'Justrolledintotheshop', // Automotive nightmares
-  'TreesSuckingAtThings', // Trees failing at tree things
-  'ShowerOrange', // People eating oranges in the shower
-  'PhotoshopBattles', // Creative photoshop edits
-  'ForbiddenSnacks', // Things that look edible but aren't
-  'evilbuildings', // Buildings that look evil
-  'BadUrbanPlanning', // Urban design fails
-  'PointlesslyGendered', // Needlessly gendered products
-  'JustBootThings', // Bootleg/corrupted versions
-  'WTFStockPhotos', // Weird stock photos
-  'TIHI', // Thanks I Hate It
-  'agedlikemilk', // Things that aged badly
-  'Bananaforscale', // Using bananas for scale
-  'MildlyVandalised', // Mild vandalism
-  'shittyfoodporn', // Terrible food photos
-  'ImaginaryMonsters', // Weird imaginary creatures
+  "BreadStapledToTrees", // Bread stapled to trees. Literally.
+  "WeWantPlates", // Absurd plate presentation
+  "AssholeDesign", // Malicious design
+  "Justrolledintotheshop", // Automotive nightmares
+  "TreesSuckingAtThings", // Trees failing at tree things
+  "ShowerOrange", // People eating oranges in the shower
+  "PhotoshopBattles", // Creative photoshop edits
+  "ForbiddenSnacks", // Things that look edible but aren't
+  "evilbuildings", // Buildings that look evil
+  "BadUrbanPlanning", // Urban design fails
+  "PointlesslyGendered", // Needlessly gendered products
+  "JustBootThings", // Bootleg/corrupted versions
+  "WTFStockPhotos", // Weird stock photos
+  "TIHI", // Thanks I Hate It
+  "agedlikemilk", // Things that aged badly
+  "Bananaforscale", // Using bananas for scale
+  "MildlyVandalised", // Mild vandalism
+  "shittyfoodporn", // Terrible food photos
+  "ImaginaryMonsters", // Weird imaginary creatures
+  "CatsWithJobs",
+  "ChairsUnderwater",
+  "ToiletsWithThreateningAuras",
+  "ThingsFittingInThings",
+  "BeesBeingJerks",
+  "StartledCats",
+  "StuffOnCats",
+  "CursedCommentsIRL",
+  "PeopleFuckingDying",
+  "PeopleWithBirds",
+  "FlatsThatJustWork",
+  "AccidentalPenis",
+  "PerfectlyCutMemes",
+  "HotdogWater",
+  "AnimalsWithoutNecks",
+  "AccidentalWesAnderson",
+  "DelusionalArtists",
+  "Zoomies",
+  "ThingsCutInHalfPorn",
+  "evilbuildings",
+  "WhenThingsWereFresh",
+  "HorsesStandingLikeDogs",
+  "ItemShop",
+  "UnusualVideos",
+  "SadBeige",
+  "bonehurtingjuice",
+  "mildlyvagina",
+  "Mirrorsforsale",
 ];
 
 export interface RedditPost {
@@ -71,8 +93,8 @@ class RedditService {
 
   constructor() {
     // Get Reddit API credentials from environment variables
-    this.clientId = process.env.REDDIT_CLIENT_ID || '';
-    this.clientSecret = process.env.REDDIT_CLIENT_SECRET || '';
+    this.clientId = process.env.REDDIT_CLIENT_ID || "";
+    this.clientSecret = process.env.REDDIT_CLIENT_SECRET || "";
   }
 
   /**
@@ -86,23 +108,30 @@ class RedditService {
 
     // If no credentials, return null (will fall back to unauthenticated access)
     if (!this.clientId || !this.clientSecret) {
-      console.warn('Reddit API credentials not configured. Using unauthenticated access (limited).');
+      console.warn(
+        "Reddit API credentials not configured. Using unauthenticated access (limited).",
+      );
       return null;
     }
 
     try {
       // Get new token using OAuth client credentials flow
-      const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+      const auth = Buffer.from(
+        `${this.clientId}:${this.clientSecret}`,
+      ).toString("base64");
 
-      const response = await fetch('https://www.reddit.com/api/v1/access_token', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'yodo.lol/1.0.0',
+      const response = await fetch(
+        "https://www.reddit.com/api/v1/access_token",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${auth}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "yodo.lol/1.0.0",
+          },
+          body: "grant_type=client_credentials",
         },
-        body: 'grant_type=client_credentials',
-      });
+      );
 
       if (!response.ok) {
         console.error(`Failed to get Reddit OAuth token: ${response.status}`);
@@ -114,12 +143,12 @@ class RedditService {
       // Cache token (expires in 1 hour, we'll refresh 5 minutes early)
       this.accessToken = {
         access_token: data.access_token,
-        expires_at: Date.now() + ((data.expires_in - 300) * 1000),
+        expires_at: Date.now() + (data.expires_in - 300) * 1000,
       };
 
       return this.accessToken.access_token;
     } catch (error) {
-      console.error('Error getting Reddit OAuth token:', error);
+      console.error("Error getting Reddit OAuth token:", error);
       return null;
     }
   }
@@ -135,23 +164,21 @@ class RedditService {
     const selectedSubreddits = this.getRandomSubreddits(subredditCount);
 
     // Fetch from multiple subreddits in parallel for better performance
-    const fetchPromises = selectedSubreddits.map(subredditName =>
-      this.fetchFromSubreddit(subredditName, postsPerSubreddit)
+    const fetchPromises = selectedSubreddits.map((subredditName) =>
+      this.fetchFromSubreddit(subredditName, postsPerSubreddit),
     );
 
     const results = await Promise.allSettled(fetchPromises);
 
     // Collect successful results
     for (const result of results) {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         posts.push(...result.value);
       }
     }
 
     // Shuffle and limit results
-    return posts
-      .sort(() => Math.random() - 0.5)
-      .slice(0, limit);
+    return posts.sort(() => Math.random() - 0.5).slice(0, limit);
   }
 
   /**
@@ -159,32 +186,34 @@ class RedditService {
    */
   private async fetchFromSubreddit(
     subredditName: string,
-    limit: number
+    limit: number,
   ): Promise<RedditPost[]> {
     try {
       const token = await this.getAccessToken();
 
       // Build headers
       const headers: HeadersInit = {
-        'User-Agent': 'yodo.lol/1.0.0',
+        "User-Agent": "yodo.lol/1.0.0",
       };
 
       // Use OAuth API if we have a token
-      let baseUrl = 'https://www.reddit.com';
+      let baseUrl = "https://www.reddit.com";
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-        baseUrl = 'https://oauth.reddit.com';
+        headers["Authorization"] = `Bearer ${token}`;
+        baseUrl = "https://oauth.reddit.com";
       }
 
       const url = `${baseUrl}/r/${subredditName}/hot.json?limit=${limit * 2}&raw_json=1`;
 
       const response = await fetch(url, {
         headers,
-        cache: 'no-store',
+        cache: "no-store",
       });
 
       if (!response.ok) {
-        console.warn(`Failed to fetch from r/${subredditName}: ${response.status}`);
+        console.warn(
+          `Failed to fetch from r/${subredditName}: ${response.status}`,
+        );
         return [];
       }
 
@@ -228,9 +257,12 @@ class RedditService {
       subreddit: post.subreddit,
       url: post.url,
       imageUrl,
-      thumbnail: post.thumbnail && post.thumbnail !== 'self' && post.thumbnail !== 'default'
-        ? post.thumbnail
-        : undefined,
+      thumbnail:
+        post.thumbnail &&
+        post.thumbnail !== "self" &&
+        post.thumbnail !== "default"
+          ? post.thumbnail
+          : undefined,
       score: post.score,
       numComments: post.num_comments,
       created: post.created_utc,
@@ -254,7 +286,11 @@ class RedditService {
     }
 
     // Check if it's an imgur link (very common on Reddit)
-    if (post.url?.includes('imgur.com') && !post.url.includes('/a/') && !post.url.includes('/gallery/')) {
+    if (
+      post.url?.includes("imgur.com") &&
+      !post.url.includes("/a/") &&
+      !post.url.includes("/gallery/")
+    ) {
       if (!post.url.match(/\.(jpg|jpeg|png|gif)$/i)) {
         return `${post.url}.jpg`;
       }
@@ -262,7 +298,7 @@ class RedditService {
     }
 
     // Check for i.redd.it links
-    if (post.url?.includes('i.redd.it')) {
+    if (post.url?.includes("i.redd.it")) {
       return post.url;
     }
 
@@ -281,9 +317,9 @@ class RedditService {
    */
   private decodeHtmlEntities(url: string): string {
     return url
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
       .replace(/&quot;/g, '"')
       .replace(/&#039;/g, "'");
   }
@@ -300,7 +336,9 @@ class RedditService {
    * Get a random quirky subreddit
    */
   getRandomSubreddit(): string {
-    return QUIRKY_SUBREDDITS[Math.floor(Math.random() * QUIRKY_SUBREDDITS.length)];
+    return QUIRKY_SUBREDDITS[
+      Math.floor(Math.random() * QUIRKY_SUBREDDITS.length)
+    ];
   }
 }
 
