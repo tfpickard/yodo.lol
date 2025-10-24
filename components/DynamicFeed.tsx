@@ -17,6 +17,57 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isThemeChanging, setIsThemeChanging] = useState(false);
   const [titleClass, setTitleClass] = useState('');
+  const [currentTitle, setCurrentTitle] = useState('¥ØĐØ.ŁØŁ');
+  const [currentSubtitle, setCurrentSubtitle] = useState('AI-Powered Psychedelic Nightmare Feed');
+
+  // Title variations - misspellings and different extensions
+  const titleVariations = [
+    '¥ØĐØ.ŁØŁ',
+    'YODO.LOL',
+    'YØDO.COM',
+    'YODO.NET',
+    'Y0D0.ORG',
+    'YODO.WTF',
+    'YODO.XYZ',
+    'YODO.LIFE',
+    'YØĐØ.IO',
+    'Y0DO.APP',
+    'YODO.ZONE',
+    'YODO.CHAOS',
+    'YODO.VOID',
+    'Y̴O̴D̴O̴.̴L̴O̴L̴',  // corrupted text
+    'YODO.???',
+    'YODO.EXE',
+    'YOOD.LOL',  // misspelled
+    'YODO.LOI',  // misspelled
+    'YODO.LOL?',
+    'YØÐØ.ŁØŁ',
+    'Y҉O҉D҉O҉.L҉O҉L҉',  // zalgo-lite
+  ];
+
+  // Subtitle variations
+  const subtitleVariations = [
+    'AI-Powered Psychedelic Nightmare Feed',
+    'Reality Dissolution Engine',
+    'Consciousness Fragmentation Interface',
+    'Digital Schizophrenia Simulator',
+    'Interdimensional Meme Portal',
+    'Sentient Chaos Generator',
+    'Existential Dread Aggregator',
+    'Timeline Corruption Feed',
+    'Void Screaming Visualizer',
+    'Reality.exe Has Stopped Working',
+    'Your Regularly Scheduled Breakdown',
+    'The Cosmic Horror Social Network',
+    'Where Sanity Goes To Die',
+    'Powered By Dissociation',
+    'A̷I̷-̷P̷o̷w̷e̷r̷e̷d̷ ̷G̷l̷i̷t̷c̷h̷',
+    'Embrace The Static',
+    'We Are All Just Vibing In The Abyss',
+    'Mom I\'m Scared',
+    'This Is Fine [̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
+    'Hell Is Other People\'s Posts',
+  ];
 
   // Apply theme on mount and when theme changes
   useEffect(() => {
@@ -40,6 +91,28 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
     }, 3000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Random title text changes every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomTitle = titleVariations[Math.floor(Math.random() * titleVariations.length)];
+      setCurrentTitle(randomTitle);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Random subtitle changes every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomSubtitle = subtitleVariations[Math.floor(Math.random() * subtitleVariations.length)];
+      setCurrentSubtitle(randomSubtitle);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refreshFeed = async () => {
@@ -112,13 +185,13 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
             fontFamily: 'var(--font-family)',
           }}
         >
-          ¥ØĐØ.ŁØŁ
+          {currentTitle}
         </h1>
         <p
           className="text-lg md:text-xl mb-6 opacity-80"
           style={{ color: 'var(--text-color)' }}
         >
-          AI-Powered Psychedelic Nightmare Feed
+          {currentSubtitle}
         </p>
 
         {/* Theme Info */}
