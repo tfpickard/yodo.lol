@@ -1,5 +1,3 @@
-import Snoowrap from 'snoowrap';
-
 // Quirky, off-the-wall subreddits for unpredictable content
 const QUIRKY_SUBREDDITS = [
   'hmmm',
@@ -40,132 +38,89 @@ export interface RedditPost {
 }
 
 class RedditService {
-  private client: Snoowrap | null = null;
-
-  constructor() {
-    if (process.env.REDDIT_CLIENT_ID && process.env.REDDIT_CLIENT_SECRET) {
-      this.client = new Snoowrap({
-        userAgent: process.env.REDDIT_USER_AGENT || 'YodoLol:v1.0.0',
-        clientId: process.env.REDDIT_CLIENT_ID,
-        clientSecret: process.env.REDDIT_CLIENT_SECRET,
-      });
-    }
-  }
-
   /**
-   * Fetch trending posts from quirky subreddits
+   * Fetch trending posts from quirky subreddits using public Reddit JSON API
+   * No authentication required!
    */
   async fetchQuirkyPosts(limit: number = 20): Promise<RedditPost[]> {
-    if (this.client) {
-      return this.fetchWithAuth(limit);
-    } else {
-      return this.fetchWithoutAuth(limit);
-    }
-  }
-
-  /**
-   * Fetch posts using authenticated Reddit API
-   */
-  private async fetchWithAuth(limit: number): Promise<RedditPost[]> {
-    if (!this.client) return [];
-
-    const posts: RedditPost[] = [];
-    const subredditCount = Math.min(5, QUIRKY_SUBREDDITS.length);
-    const postsPerSubreddit = Math.ceil(limit / subredditCount);
-
-    // Randomly select subreddits for variety
-    const selectedSubreddits = this.getRandomSubreddits(subredditCount);
-
-    for (const subredditName of selectedSubreddits) {
-      try {
-        const subreddit = this.client.getSubreddit(subredditName);
-        const listing = await subreddit.getHot({ limit: postsPerSubreddit });
-
-        for (const post of listing) {
-          const redditPost = this.transformPost(post);
-          if (redditPost && redditPost.imageUrl) {
-            posts.push(redditPost);
-          }
-        }
-      } catch (error) {
-        console.error(`Error fetching from r/${subredditName}:`, error);
-      }
-    }
-
-    return posts.slice(0, limit);
-  }
-
-  /**
-   * Fetch posts using public Reddit JSON API (no auth required)
-   */
-  private async fetchWithoutAuth(limit: number): Promise<RedditPost[]> {
     const posts: RedditPost[] = [];
     const subredditCount = Math.min(5, QUIRKY_SUBREDDITS.length);
     const postsPerSubreddit = Math.ceil(limit / subredditCount);
 
     const selectedSubreddits = this.getRandomSubreddits(subredditCount);
 
-    for (const subredditName of selectedSubreddits) {
-      try {
-        const url = `https://www.reddit.com/r/${subredditName}/hot.json?limit=${postsPerSubreddit}`;
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'YodoLol:v1.0.0',
-          },
-        });
+    // Fetch from multiple subreddits in parallel for better performance
+    const fetchPromises = selectedSubreddits.map(subredditName =>
+      this.fetchFromSubreddit(subredditName, postsPerSubreddit)
+    );
 
-        if (!response.ok) continue;
+    const results = await Promise.allSettled(fetchPromises);
 
-        const data = await response.json();
-        const children = data?.data?.children || [];
-
-        for (const child of children) {
-          const post = child.data;
-          const redditPost = this.transformPublicPost(post);
-          if (redditPost && redditPost.imageUrl) {
-            posts.push(redditPost);
-          }
-        }
-      } catch (error) {
-        console.error(`Error fetching from r/${subredditName}:`, error);
+    // Collect successful results
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        posts.push(...result.value);
       }
     }
 
-    return posts.slice(0, limit);
+    // Shuffle and limit results
+    return posts
+      .sort(() => Math.random() - 0.5)
+      .slice(0, limit);
   }
 
   /**
-   * Transform Snoowrap post object
+   * Fetch posts from a specific subreddit
+   */
+  private async fetchFromSubreddit(
+    subredditName: string,
+    limit: number
+  ): Promise<RedditPost[]> {
+    try {
+      const url = `https://www.reddit.com/r/${subredditName}/hot.json?limit=${limit * 2}`; // Fetch extra to account for filtering
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'YodoLol:v1.0.0 (web app)',
+        },
+        next: { revalidate: 0 }, // Don't cache in Next.js
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to fetch from r/${subredditName}: ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+      const children = data?.data?.children || [];
+
+      const posts: RedditPost[] = [];
+      for (const child of children) {
+        const post = child.data;
+        const redditPost = this.transformPost(post);
+        if (redditPost && redditPost.imageUrl) {
+          posts.push(redditPost);
+          if (posts.length >= limit) break;
+        }
+      }
+
+      return posts;
+    } catch (error) {
+      console.error(`Error fetching from r/${subredditName}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Transform Reddit API post to our format
    */
   private transformPost(post: any): RedditPost | null {
-    if (post.is_self || post.is_video) return null;
+    // Skip text posts, videos, and galleries
+    if (post.is_self || post.is_video || post.is_gallery) return null;
 
-    let imageUrl = this.extractImageUrl(post);
-    if (!imageUrl) return null;
+    // Skip NSFW content
+    if (post.over_18) return null;
 
-    return {
-      id: post.id,
-      title: post.title,
-      author: post.author.name,
-      subreddit: post.subreddit.display_name,
-      url: post.url,
-      imageUrl,
-      thumbnail: post.thumbnail !== 'self' ? post.thumbnail : undefined,
-      score: post.score,
-      numComments: post.num_comments,
-      created: post.created_utc,
-      permalink: `https://reddit.com${post.permalink}`,
-      isVideo: post.is_video || false,
-    };
-  }
-
-  /**
-   * Transform public Reddit API post
-   */
-  private transformPublicPost(post: any): RedditPost | null {
-    if (post.is_self || post.is_video) return null;
-
-    let imageUrl = this.extractImageUrl(post);
+    const imageUrl = this.extractImageUrl(post);
     if (!imageUrl) return null;
 
     return {
@@ -175,7 +130,9 @@ class RedditService {
       subreddit: post.subreddit,
       url: post.url,
       imageUrl,
-      thumbnail: post.thumbnail !== 'self' ? post.thumbnail : undefined,
+      thumbnail: post.thumbnail && post.thumbnail !== 'self' && post.thumbnail !== 'default'
+        ? post.thumbnail
+        : undefined,
       score: post.score,
       numComments: post.num_comments,
       created: post.created_utc,
@@ -193,16 +150,21 @@ class RedditService {
       return post.url;
     }
 
-    // Check preview images
+    // Check preview images (most reliable for Reddit hosted images)
     if (post.preview?.images?.[0]?.source?.url) {
-      return post.preview.images[0].source.url.replace(/&amp;/g, '&');
+      return this.decodeHtmlEntities(post.preview.images[0].source.url);
     }
 
-    // Check if it's an imgur link
-    if (post.url?.includes('imgur.com') && !post.url.includes('/a/')) {
+    // Check if it's an imgur link (very common on Reddit)
+    if (post.url?.includes('imgur.com') && !post.url.includes('/a/') && !post.url.includes('/gallery/')) {
       if (!post.url.match(/\.(jpg|jpeg|png|gif)$/i)) {
         return `${post.url}.jpg`;
       }
+      return post.url;
+    }
+
+    // Check for i.redd.it links
+    if (post.url?.includes('i.redd.it')) {
       return post.url;
     }
 
@@ -214,6 +176,18 @@ class RedditService {
    */
   private isImageUrl(url: string): boolean {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+  }
+
+  /**
+   * Decode HTML entities in URLs (Reddit returns &amp; instead of &)
+   */
+  private decodeHtmlEntities(url: string): string {
+    return url
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'");
   }
 
   /**

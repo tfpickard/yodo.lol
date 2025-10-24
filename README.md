@@ -28,7 +28,7 @@ Every visit to YODO.LOL is unique:
 
 - Node.js 18+ installed
 - OpenAI API key (required)
-- Reddit API credentials (optional, but recommended for higher rate limits)
+- That's it! No Reddit API credentials needed!
 
 ### Installation
 
@@ -50,15 +50,10 @@ Every visit to YODO.LOL is unique:
    cp .env.example .env
    ```
 
-   Edit `.env` and add your API keys:
+   Edit `.env` and add your OpenAI API key:
    ```env
    # Required: OpenAI API Key
    OPENAI_API_KEY=sk-your-openai-api-key-here
-
-   # Optional: Reddit API Credentials (get from https://www.reddit.com/prefs/apps)
-   REDDIT_CLIENT_ID=your_reddit_client_id
-   REDDIT_CLIENT_SECRET=your_reddit_client_secret
-   REDDIT_USER_AGENT=YodoLol:v1.0.0 (by /u/yourusername)
    ```
 
 4. **Run the development server**
@@ -82,29 +77,23 @@ Every visit to YODO.LOL is unique:
 
 **Note**: This app uses GPT-4-turbo which requires a paid OpenAI account with credits.
 
-### Reddit API Credentials (Optional)
+### No Reddit API Needed!
 
-Without Reddit credentials, the app will still work but with rate limits.
+This app uses Reddit's public JSON API, which means:
+- ✅ No Reddit account required
+- ✅ No API credentials to set up
+- ✅ No OAuth flow
+- ✅ Works out of the box with just an OpenAI key
 
-To get unlimited access:
-
-1. Go to [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
-2. Click "Create App" or "Create Another App"
-3. Fill in the form:
-   - **name**: YODO.LOL (or anything you want)
-   - **type**: script
-   - **description**: Personal Reddit feed app
-   - **redirect uri**: http://localhost:3000
-4. Click "Create app"
-5. Copy the client ID (under your app name) and client secret
-6. Add them to your `.env` file
+The public API has generous rate limits that are perfect for this application.
 
 ## 🎨 How It Works
 
 ### 1. Reddit Content Fetching (`lib/reddit.ts`)
+- Uses Reddit's public JSON API (no auth required!)
 - Randomly selects 5 quirky subreddits
-- Fetches hot posts with images
-- Works with or without Reddit API credentials
+- Fetches hot posts with images in parallel
+- Filters out NSFW content, videos, and text posts
 
 ### 2. AI Enhancement (`lib/openai.ts`)
 - Sends post titles to GPT-4
@@ -134,7 +123,7 @@ To get unlimited access:
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + CSS Custom Properties
 - **AI**: OpenAI GPT-4-turbo
-- **Reddit API**: Snoowrap + Public JSON API
+- **Reddit API**: Public JSON API (no auth required)
 - **Animations**: Framer Motion
 - **Deployment**: Vercel-ready
 
@@ -203,25 +192,23 @@ Edit the system prompt in `lib/openai.ts` to create different personality types.
 
 ### Environment Variables in Production
 
-Make sure to add these in your deployment platform:
-- `OPENAI_API_KEY`
-- `REDDIT_CLIENT_ID` (optional)
-- `REDDIT_CLIENT_SECRET` (optional)
-- `REDDIT_USER_AGENT` (optional)
+Only one environment variable is needed:
+- `OPENAI_API_KEY` (required)
 
 ## ⚠️ Notes & Limitations
 
 - **OpenAI Costs**: Each page load and theme change uses GPT-4 tokens. Monitor your usage!
-- **Rate Limits**: Without Reddit credentials, you're limited to ~60 requests per hour
+- **Reddit Rate Limits**: The public API has generous limits, but may occasionally hit rate limits during heavy use
 - **Image Loading**: Some Reddit images may fail to load due to CORS or deleted posts
 - **Browser Support**: Best experienced on modern browsers with JavaScript enabled
+- **NSFW Content**: Filtered out automatically for a safe browsing experience
 
 ## 🐛 Troubleshooting
 
 **"Failed to fetch feed"**
 - Check your OpenAI API key is valid
 - Ensure you have credits in your OpenAI account
-- Check Reddit API credentials if using them
+- Check your internet connection
 
 **Images not loading**
 - Some Reddit images have CORS restrictions

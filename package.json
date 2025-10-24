@@ -13,7 +13,6 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "openai": "^4.20.0",
-    "snoowrap": "^1.23.0",
     "framer-motion": "^11.0.0"
   },
   "devDependencies": {

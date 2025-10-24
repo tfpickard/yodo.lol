@@ -21,12 +21,17 @@ export interface EnhancedPost extends RedditPost {
 }
 
 class OpenAIService {
-  private client: OpenAI;
+  private client: OpenAI | null = null;
 
-  constructor() {
-    this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+  private getClient(): OpenAI {
+    if (!this.client) {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        throw new Error('OPENAI_API_KEY environment variable is required');
+      }
+      this.client = new OpenAI({ apiKey });
+    }
+    return this.client;
   }
 
   /**
@@ -34,7 +39,8 @@ class OpenAIService {
    */
   async generateDesignTheme(): Promise<DesignTheme> {
     try {
-      const completion = await this.client.chat.completions.create({
+      const client = this.getClient();
+      const completion = await client.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [
           {
@@ -82,11 +88,12 @@ Make it weird, make it fun, make it memorable!`,
     if (posts.length === 0) return [];
 
     try {
+      const client = this.getClient();
       const postSummaries = posts.map((post, idx) =>
         `${idx + 1}. From r/${post.subreddit}: "${post.title}"`
       ).join('\n');
 
-      const completion = await this.client.chat.completions.create({
+      const completion = await client.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [
           {
