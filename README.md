@@ -28,7 +28,7 @@ Every visit to YODO.LOL is unique:
 
 - Node.js 18+ installed
 - OpenAI API key (required)
-- That's it! No Reddit API credentials needed!
+- Reddit API credentials (required for production/Vercel)
 
 ### Installation
 
@@ -50,10 +50,14 @@ Every visit to YODO.LOL is unique:
    cp .env.example .env
    ```
 
-   Edit `.env` and add your OpenAI API key:
+   Edit `.env` and add your API keys:
    ```env
    # Required: OpenAI API Key
    OPENAI_API_KEY=sk-your-openai-api-key-here
+
+   # Required for Production: Reddit API Credentials
+   REDDIT_CLIENT_ID=your-client-id
+   REDDIT_CLIENT_SECRET=your-client-secret
    ```
 
 4. **Run the development server**
@@ -77,20 +81,33 @@ Every visit to YODO.LOL is unique:
 
 **Note**: This app uses GPT-4-turbo which requires a paid OpenAI account with credits.
 
-### No Reddit API Needed!
+### Reddit API (Required for Production)
 
-This app uses Reddit's public JSON API, which means:
-- ✅ No Reddit account required
-- ✅ No API credentials to set up
-- ✅ No OAuth flow
-- ✅ Works out of the box with just an OpenAI key
+Due to Reddit blocking unauthenticated requests from cloud infrastructure (like Vercel), you'll need to set up Reddit API credentials:
 
-The public API has generous rate limits that are perfect for this application.
+1. Go to [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps)
+2. Click "Create App" or "Create Another App"
+3. Choose **"script"** as the app type
+4. Fill in:
+   - **name**: yodo-lol (or any name)
+   - **description**: AI-powered Reddit feed
+   - **redirect uri**: http://localhost (not used but required)
+5. Click "Create app"
+6. Copy the **client ID** (under the app name)
+7. Copy the **secret**
+8. Add both to your `.env` file
+
+**Why OAuth?**
+- Reddit blocks unauthenticated requests from cloud providers
+- OAuth provides reliable, authenticated access
+- The app uses the "client credentials" flow (no user login needed)
+- Rate limits are more generous with authentication
 
 ## 🎨 How It Works
 
 ### 1. Reddit Content Fetching (`lib/reddit.ts`)
-- Uses Reddit's public JSON API (no auth required!)
+- Uses Reddit's OAuth API with client credentials flow
+- Automatically handles token management and caching
 - Randomly selects 5 quirky subreddits
 - Fetches hot posts with images in parallel
 - Filters out NSFW content, videos, and text posts
@@ -192,8 +209,12 @@ Edit the system prompt in `lib/openai.ts` to create different personality types.
 
 ### Environment Variables in Production
 
-Only one environment variable is needed:
+Required environment variables:
 - `OPENAI_API_KEY` (required)
+- `REDDIT_CLIENT_ID` (required)
+- `REDDIT_CLIENT_SECRET` (required)
+
+Add these in your Vercel project settings under "Environment Variables".
 
 ## ⚠️ Notes & Limitations
 
