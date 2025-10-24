@@ -462,7 +462,7 @@ export default function DynamicFeed({
             ease: "easeInOut",
           }}
         >
-          Current Vibe: <strong className="glitch-text">{theme.mood}</strong>
+          Trigger warning: <strong className="glitch-text">{theme.mood}</strong>
         </motion.div>
 
         {/* Control Buttons */}
