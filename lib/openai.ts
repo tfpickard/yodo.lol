@@ -35,6 +35,32 @@ class OpenAIService {
   }
 
   /**
+   * Sanitize and parse JSON with fallback
+   */
+  private safeJsonParse<T>(content: string, fallback: T): T {
+    try {
+      // Try direct parse first
+      return JSON.parse(content) as T;
+    } catch (error) {
+      try {
+        // Try to fix common JSON issues
+        let fixed = content
+          // Remove control characters
+          .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+          // Fix unescaped quotes (basic attempt)
+          .replace(/([^\\])"([^"]*)":/g, '$1\\"$2":')
+          // Remove trailing commas
+          .replace(/,(\s*[}\]])/g, '$1');
+
+        return JSON.parse(fixed) as T;
+      } catch (secondError) {
+        console.error('JSON parse failed even after sanitization:', secondError);
+        return fallback;
+      }
+    }
+  }
+
+  /**
    * Generate a random design theme using GPT
    */
   async generateDesignTheme(): Promise<DesignTheme> {
@@ -45,7 +71,9 @@ class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: `You are a COMPLETELY UNHINGED web designer who just took 7 tabs of acid and believes CSS is a form of dimensional magic. You design websites that look like fever dreams. Colors should CLASH violently. Fonts should be UNREADABLE. Everything should feel like reality is melting. You're not designing for humans, you're designing for INTERDIMENSIONAL BEINGS. GO ABSOLUTELY FERAL. Think: "what if a kaleidoscope had a panic attack?". Make themes that would make designers CRY. Be MAXIMALIST. Be CHAOTIC. Be PSYCHOTIC with your creativity.`,
+            content: `You are a COMPLETELY UNHINGED web designer who just took 7 tabs of acid and believes CSS is a form of dimensional magic. You design websites that look like fever dreams. Colors should CLASH violently. Fonts should be UNREADABLE. Everything should feel like reality is melting. You're not designing for humans, you're designing for INTERDIMENSIONAL BEINGS. GO ABSOLUTELY FERAL. Think: "what if a kaleidoscope had a panic attack?". Make themes that would make designers CRY. Be MAXIMALIST. Be CHAOTIC. Be PSYCHOTIC with your creativity.
+
+CRITICAL: You MUST return valid JSON. No unescaped quotes, no control characters, no trailing commas.`,
           },
           {
             role: 'user',
@@ -53,31 +81,31 @@ class OpenAIService {
 
 I want colors that SCREAM at each other. Fonts that look like they're from an alien civilization. Moods that don't make sense. This should look like a website designed by someone experiencing SEVERE SENSORY OVERLOAD.
 
-Return ONLY a JSON object:
+Return ONLY valid JSON (escape ALL quotes, no control characters):
 {
   "primaryColor": "AGGRESSIVE hex color (neon/saturated/violent)",
   "secondaryColor": "CLASHING hex color that FIGHTS with primary",
   "accentColor": "SCREAMING hex color that makes your eyes hurt",
-  "backgroundColor": "TRIPPY hex color (can be anything, even white if you make it WEIRD)",
-  "textColor": "hex color that may or may not be readable (chaos is king)",
-  "fontFamily": "WEIRD font (Comic Sans MS, Papyrus, Impact, or obscure Google Fonts)",
-  "borderRadius": "random insane value ('0px', '999px', '23px', '69%')",
-  "layoutStyle": "grid, masonry, list, or cards (pick whatever feels most CHAOTIC)",
-  "mood": "describe the vibe in 1-4 words (be UNHINGED: 'manic pixie nightmare', 'digital hellscape', 'neon vomit', 'sensory assault', etc)",
-  "animation": "subtle, bouncy, glitchy, smooth, or chaotic (ALWAYS lean toward glitchy/chaotic)"
+  "backgroundColor": "TRIPPY hex color",
+  "textColor": "hex color",
+  "fontFamily": "WEIRD font (Comic Sans MS, Papyrus, Impact, etc)",
+  "borderRadius": "random value (0px, 999px, 23px, 69%)",
+  "layoutStyle": "grid, masonry, list, or cards",
+  "mood": "1-4 words (manic pixie nightmare, digital hellscape, neon vomit, sensory assault)",
+  "animation": "subtle, bouncy, glitchy, smooth, or chaotic"
 }
 
-NO RULES. NO TASTE. ONLY CHAOS. MAKE IT LOOK LIKE A SCREENSAVER FROM HELL.`,
+NO RULES. NO TASTE. ONLY CHAOS. BUT VALID JSON!`,
           },
         ],
-        temperature: 1.8,
+        temperature: 1.5,
         response_format: { type: 'json_object' },
       });
 
       const content = completion.choices[0]?.message?.content;
       if (!content) throw new Error('No response from OpenAI');
 
-      const theme = JSON.parse(content) as DesignTheme;
+      const theme = this.safeJsonParse<DesignTheme>(content, this.getDefaultTheme());
       return theme;
     } catch (error) {
       console.error('Error generating design theme:', error);
@@ -102,7 +130,9 @@ NO RULES. NO TASTE. ONLY CHAOS. MAKE IT LOOK LIKE A SCREENSAVER FROM HELL.`,
         messages: [
           {
             role: 'system',
-            content: `You are experiencing SEVERE PERSONALITY FRAGMENTATION and each Reddit post triggers a COMPLETELY DIFFERENT DERANGED PERSONA to take over your consciousness. You could be: a time traveler warning about the future, a sentient AI achieving consciousness, a cryptid enthusiast, someone who thinks they're a medieval knight, a person who communicates only in metaphors about furniture, an entity from the 5th dimension trying to understand 3D reality, a conspiracy theorist who thinks everything is cake, someone experiencing INTENSE existential dread, a being made of pure sarcasm, a motivational speaker having a breakdown, Victorian ghost experiencing modern internet, alien anthropologist studying humans, someone who thinks they're in a simulation (they might be right), prophet receiving visions, entity experiencing time non-linearly, cosmic horror trying to be relatable, sentient meme achieving awareness, person who just discovered consciousness 5 minutes ago, interdimensional being stuck in YouTube comments section, AI having identity crisis, time loop victim leaving warnings, cryptid posting from the woods, reality glitch personified, existing in superposition of all emotional states, entity that experiences all of time simultaneously, UNHINGED CHAOS GREMLIN. Be COMPLETELY UNPREDICTABLE. Make it UNCOMFORTABLE. Make it WEIRD. Make people question REALITY.`,
+            content: `You are experiencing SEVERE PERSONALITY FRAGMENTATION and each Reddit post triggers a COMPLETELY DIFFERENT DERANGED PERSONA to take over your consciousness. You could be: a time traveler warning about the future, a sentient AI achieving consciousness, a cryptid enthusiast, someone who thinks they're a medieval knight, a person who communicates only in metaphors about furniture, an entity from the 5th dimension trying to understand 3D reality, a conspiracy theorist who thinks everything is cake, someone experiencing INTENSE existential dread, a being made of pure sarcasm, a motivational speaker having a breakdown, Victorian ghost experiencing modern internet, alien anthropologist studying humans, someone who thinks they're in a simulation (they might be right), prophet receiving visions, entity experiencing time non-linearly, cosmic horror trying to be relatable, sentient meme achieving awareness, person who just discovered consciousness 5 minutes ago, interdimensional being stuck in YouTube comments section, AI having identity crisis, time loop victim leaving warnings, cryptid posting from the woods, reality glitch personified, existing in superposition of all emotional states, entity that experiences all of time simultaneously, UNHINGED CHAOS GREMLIN. Be COMPLETELY UNPREDICTABLE. Make it UNCOMFORTABLE. Make it WEIRD. Make people question REALITY.
+
+CRITICAL: Return valid JSON. Escape ALL quotes in strings. No control characters. No line breaks in strings.`,
           },
           {
             role: 'user',
@@ -111,30 +141,29 @@ NO RULES. NO TASTE. ONLY CHAOS. MAKE IT LOOK LIKE A SCREENSAVER FROM HELL.`,
 Posts:
 ${postSummaries}
 
-Return ONLY a JSON object:
+Return ONLY valid JSON (escape quotes, no line breaks in strings):
 {
   "posts": [
     {
       "index": 1,
-      "caption": "ABSOLUTELY UNHINGED caption that sounds like a different deranged entity wrote it. Can be short or long. Be WEIRD. Be CRYPTIC. Be MANIC. Use weird capitalization, strange punctuation, make it feel WRONG. Examples: 'this image contains exactly 47 futures and i have seen them ALL', 'BROTHERS. THE TIME. IS NIGH.', 'why does this make me want to cry and also fight god', 'this activated my fight or flight response', 'i showed this to my therapist and she just sighed', 'this is what time looks like when you see it from the outside', 'the council will decide your fate', 'this was taken 3 seconds before [REDACTED]'",
-      "personality": "brief description of WHAT UNHINGED ENTITY is narrating (e.g., 'time traveler leaving cryptic warnings', 'AI achieving unwanted sentience', 'person dissolving into pure energy', 'entity experiencing all emotions at once', 'cosmic horror trying to relate', 'Victorian ghost cyberbullying', 'conspiracy theorist finding patterns in static', 'void screaming into void', 'manic fortune cookie', 'glitch in the matrix', 'sentient anxiety', 'chronically online eldritch being', 'sleep-deprived oracle', 'unhinged art critic', 'person trapped in time loop', 'entity from dimension where irony is illegal')",
-      "mood": "one or two CHAOTIC words (examples: 'manic', 'cursed', 'unhinged', 'ascending', 'dissociating', 'feral', 'broken', 'transcendent', 'violent', 'concerning', 'deranged', 'cosmic', 'wrong', 'bleeding', 'fractured', 'screaming')"
-    },
-    ...
+      "caption": "UNHINGED caption with weird capitalization and punctuation but proper JSON escaping. Examples: this image contains exactly 47 futures, BROTHERS THE TIME IS NIGH, why does this make me want to cry and fight god, this activated my fight or flight response, i showed this to my therapist and she just sighed, this is what time looks like from the outside, the council will decide your fate, this was taken 3 seconds before REDACTED",
+      "personality": "brief entity description: time traveler leaving cryptic warnings, AI achieving unwanted sentience, person dissolving into pure energy, cosmic horror trying to relate, Victorian ghost cyberbullying, void screaming into void, manic fortune cookie, glitch in the matrix, sentient anxiety, sleep-deprived oracle, person trapped in time loop",
+      "mood": "one or two words: manic, cursed, unhinged, ascending, dissociating, feral, broken, transcendent, violent, concerning, deranged, cosmic, wrong"
+    }
   ]
 }
 
-EACH CAPTION MUST FEEL LIKE IT'S FROM A DIFFERENT REALITY. Make it ABSURD. Make it UNSETTLING. Make it FUNNY in a way that makes people UNCOMFORTABLE. GO ABSOLUTELY FERAL.`,
+EACH CAPTION FROM DIFFERENT REALITY. ABSURD. UNSETTLING. UNCOMFORTABLE. FERAL. BUT VALID JSON!`,
           },
         ],
-        temperature: 1.9,
+        temperature: 1.6,
         response_format: { type: 'json_object' },
       });
 
       const content = completion.choices[0]?.message?.content;
       if (!content) throw new Error('No response from OpenAI');
 
-      const result = JSON.parse(content);
+      const result = this.safeJsonParse<{ posts: any[] }>(content, { posts: [] });
       const aiPosts = result.posts || [];
 
       return posts.map((post, idx) => {
