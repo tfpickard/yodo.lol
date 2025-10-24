@@ -16,19 +16,103 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
   const [theme, setTheme] = useState<DesignTheme>(initialTheme);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isThemeChanging, setIsThemeChanging] = useState(false);
+  const [titleClass, setTitleClass] = useState('');
+  const [currentTitle, setCurrentTitle] = useState('¥ØĐØ.ŁØŁ');
+  const [currentSubtitle, setCurrentSubtitle] = useState('AI-Powered Psychedelic Nightmare Feed');
+
+  // Title variations - misspellings and different extensions
+  const titleVariations = [
+    '¥ØĐØ.ŁØŁ',
+    'YODO.LOL',
+    'YØDO.COM',
+    'YODO.NET',
+    'Y0D0.ORG',
+    'YODO.WTF',
+    'YODO.XYZ',
+    'YODO.LIFE',
+    'YØĐØ.IO',
+    'Y0DO.APP',
+    'YODO.ZONE',
+    'YODO.CHAOS',
+    'YODO.VOID',
+    'Y̴O̴D̴O̴.̴L̴O̴L̴',  // corrupted text
+    'YODO.???',
+    'YODO.EXE',
+    'YOOD.LOL',  // misspelled
+    'YODO.LOI',  // misspelled
+    'YODO.LOL?',
+    'YØÐØ.ŁØŁ',
+    'Y҉O҉D҉O҉.L҉O҉L҉',  // zalgo-lite
+  ];
+
+  // Subtitle variations
+  const subtitleVariations = [
+    'AI-Powered Psychedelic Nightmare Feed',
+    'Reality Dissolution Engine',
+    'Consciousness Fragmentation Interface',
+    'Digital Schizophrenia Simulator',
+    'Interdimensional Meme Portal',
+    'Sentient Chaos Generator',
+    'Existential Dread Aggregator',
+    'Timeline Corruption Feed',
+    'Void Screaming Visualizer',
+    'Reality.exe Has Stopped Working',
+    'Your Regularly Scheduled Breakdown',
+    'The Cosmic Horror Social Network',
+    'Where Sanity Goes To Die',
+    'Powered By Dissociation',
+    'A̷I̷-̷P̷o̷w̷e̷r̷e̷d̷ ̷G̷l̷i̷t̷c̷h̷',
+    'Embrace The Static',
+    'We Are All Just Vibing In The Abyss',
+    'Mom I\'m Scared',
+    'This Is Fine [̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]',
+    'Hell Is Other People\'s Posts',
+  ];
 
   // Apply theme on mount and when theme changes
   useEffect(() => {
     ThemeEngine.applyTheme(theme);
   }, [theme]);
 
-  // Auto-refresh theme every 30 seconds for the "morphing" effect
+  // Auto-refresh theme every 15 seconds for MAXIMUM CHAOS
   useEffect(() => {
     const interval = setInterval(() => {
       changeTheme();
-    }, 30000); // 30 seconds
+    }, 15000); // 15 seconds - MUCH MORE AGGRESSIVE
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Random title effects that change every 3 seconds
+  useEffect(() => {
+    const effects = ['glitch-text', 'wave-text', 'melt-text', 'spiral-text', ''];
+    const interval = setInterval(() => {
+      setTitleClass(effects[Math.floor(Math.random() * effects.length)]);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Random title text changes every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomTitle = titleVariations[Math.floor(Math.random() * titleVariations.length)];
+      setCurrentTitle(randomTitle);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Random subtitle changes every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomSubtitle = subtitleVariations[Math.floor(Math.random() * subtitleVariations.length)];
+      setCurrentSubtitle(randomSubtitle);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refreshFeed = async () => {
@@ -95,31 +179,40 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
         transition={{ duration: 0.6 }}
       >
         <h1
-          className="text-5xl md:text-7xl font-bold mb-4"
+          className={`text-5xl md:text-7xl font-bold mb-4 ${titleClass}`}
           style={{
             color: 'var(--primary-color)',
             fontFamily: 'var(--font-family)',
           }}
         >
-          YODO.LOL
+          {currentTitle}
         </h1>
         <p
           className="text-lg md:text-xl mb-6 opacity-80"
           style={{ color: 'var(--text-color)' }}
         >
-          AI-Powered Chaotic Reddit Feed
+          {currentSubtitle}
         </p>
 
         {/* Theme Info */}
-        <div
-          className="inline-block px-6 py-3 rounded-full mb-6"
+        <motion.div
+          className="inline-block px-6 py-3 rounded-full mb-6 float-random"
           style={{
             backgroundColor: 'var(--secondary-color)',
             color: 'var(--text-color)',
           }}
+          animate={{
+            rotate: [0, 5, -5, 0],
+            scale: [1, 1.05, 0.95, 1],
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
         >
-          Current Mood: <strong>{theme.mood}</strong>
-        </div>
+          Current Vibe: <strong className="glitch-text">{theme.mood}</strong>
+        </motion.div>
 
         {/* Control Buttons */}
         <div className="flex flex-wrap gap-4 justify-center items-center">
@@ -133,7 +226,7 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
               borderRadius: 'var(--border-radius)',
             }}
           >
-            {isRefreshing ? '🔄 Loading...' : '🎲 Chaos Mode (New Everything)'}
+            {isRefreshing ? '🔄 LOADING...' : '🎲 EMBRACE THE VOID'}
           </button>
 
           <button
@@ -146,7 +239,7 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
               borderRadius: 'var(--border-radius)',
             }}
           >
-            {isRefreshing ? '🔄 Loading...' : '📱 New Posts'}
+            {isRefreshing ? '🔄 LOADING...' : '📱 MORE CHAOS'}
           </button>
 
           <button
@@ -159,7 +252,7 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
               borderRadius: 'var(--border-radius)',
             }}
           >
-            {isThemeChanging ? '✨ Morphing...' : '🎨 New Theme'}
+            {isThemeChanging ? '✨ REALITY SHIFTING...' : '🎨 WARP REALITY'}
           </button>
         </div>
 
@@ -168,7 +261,7 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
           className="mt-4 text-sm opacity-50"
           style={{ color: 'var(--text-color)' }}
         >
-          ✨ Theme auto-morphs every 30 seconds
+          ⚠️ Reality shifts every 15 seconds ⚠️
         </p>
       </motion.header>
 
@@ -194,13 +287,13 @@ export default function DynamicFeed({ initialPosts, initialTheme }: DynamicFeedP
           className="text-sm opacity-50"
           style={{ color: 'var(--text-color)' }}
         >
-          Powered by OpenAI GPT + Reddit + Pure Chaos
+          Powered by OpenAI + Reddit + Severe Mental Instability
         </p>
         <p
           className="text-xs opacity-30 mt-2"
           style={{ color: 'var(--text-color)' }}
         >
-          Every visit is a new adventure. Nothing stays the same.
+          nothing is real. everything is permitted. reality is optional.
         </p>
       </motion.footer>
     </div>

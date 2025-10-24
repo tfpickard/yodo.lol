@@ -35,6 +35,32 @@ class OpenAIService {
   }
 
   /**
+   * Sanitize and parse JSON with fallback
+   */
+  private safeJsonParse<T>(content: string, fallback: T): T {
+    try {
+      // Try direct parse first
+      return JSON.parse(content) as T;
+    } catch (error) {
+      try {
+        // Try to fix common JSON issues
+        let fixed = content
+          // Remove control characters
+          .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+          // Fix unescaped quotes (basic attempt)
+          .replace(/([^\\])"([^"]*)":/g, '$1\\"$2":')
+          // Remove trailing commas
+          .replace(/,(\s*[}\]])/g, '$1');
+
+        return JSON.parse(fixed) as T;
+      } catch (secondError) {
+        console.error('JSON parse failed even after sanitization:', secondError);
+        return fallback;
+      }
+    }
+  }
+
+  /**
    * Generate a random design theme using GPT
    */
   async generateDesignTheme(): Promise<DesignTheme> {
@@ -45,35 +71,41 @@ class OpenAIService {
         messages: [
           {
             role: 'system',
-            content: `You are a creative web designer with a quirky, experimental style. Generate unique, sometimes wild design themes that push boundaries. Mix unexpected color combinations, unique fonts, and creative layouts. Make each theme feel completely different from typical web design.`,
+            content: `You are a COMPLETELY UNHINGED web designer who just took 7 tabs of acid and believes CSS is a form of dimensional magic. You design websites that look like fever dreams. Colors should CLASH violently. Fonts should be UNREADABLE. Everything should feel like reality is melting. You're not designing for humans, you're designing for INTERDIMENSIONAL BEINGS. GO ABSOLUTELY FERAL. Think: "what if a kaleidoscope had a panic attack?". Make themes that would make designers CRY. Be MAXIMALIST. Be CHAOTIC. Be PSYCHOTIC with your creativity.
+
+CRITICAL: You MUST return valid JSON. No unescaped quotes, no control characters, no trailing commas.`,
           },
           {
             role: 'user',
-            content: `Generate a completely unique, creative design theme for a social media feed. Be bold and experimental! Return ONLY a JSON object with this structure:
+            content: `DESIGN THE MOST UNHINGED, REALITY-BENDING, PSYCHEDELIC NIGHTMARE THEME YOU CAN POSSIBLY IMAGINE.
+
+I want colors that SCREAM at each other. Fonts that look like they're from an alien civilization. Moods that don't make sense. This should look like a website designed by someone experiencing SEVERE SENSORY OVERLOAD.
+
+Return ONLY valid JSON (escape ALL quotes, no control characters):
 {
-  "primaryColor": "hex color",
-  "secondaryColor": "hex color",
-  "accentColor": "hex color",
-  "backgroundColor": "hex color",
+  "primaryColor": "AGGRESSIVE hex color (neon/saturated/violent)",
+  "secondaryColor": "CLASHING hex color that FIGHTS with primary",
+  "accentColor": "SCREAMING hex color that makes your eyes hurt",
+  "backgroundColor": "TRIPPY hex color",
   "textColor": "hex color",
-  "fontFamily": "font name from Google Fonts or web-safe fonts",
-  "borderRadius": "value like '0px', '8px', '20px', '50%'",
+  "fontFamily": "WEIRD font (Comic Sans MS, Papyrus, Impact, etc)",
+  "borderRadius": "random value (0px, 999px, 23px, 69%)",
   "layoutStyle": "grid, masonry, list, or cards",
-  "mood": "describe the mood in 2-3 words",
+  "mood": "1-4 words (manic pixie nightmare, digital hellscape, neon vomit, sensory assault)",
   "animation": "subtle, bouncy, glitchy, smooth, or chaotic"
 }
 
-Make it weird, make it fun, make it memorable!`,
+NO RULES. NO TASTE. ONLY CHAOS. BUT VALID JSON!`,
           },
         ],
-        temperature: 1.2,
+        temperature: 1.5,
         response_format: { type: 'json_object' },
       });
 
       const content = completion.choices[0]?.message?.content;
       if (!content) throw new Error('No response from OpenAI');
 
-      const theme = JSON.parse(content) as DesignTheme;
+      const theme = this.safeJsonParse<DesignTheme>(content, this.getDefaultTheme());
       return theme;
     } catch (error) {
       console.error('Error generating design theme:', error);
@@ -98,39 +130,40 @@ Make it weird, make it fun, make it memorable!`,
         messages: [
           {
             role: 'system',
-            content: `You are a hilariously quirky social media personality with multiple personalities. You interpret Reddit posts in unexpected, creative, and sometimes absurd ways. Each post should feel like it's being narrated by a different character - one might be overly dramatic, another might be a conspiracy theorist, another might be extremely wholesome, etc. Be unpredictable and entertaining!`,
+            content: `You are experiencing SEVERE PERSONALITY FRAGMENTATION and each Reddit post triggers a COMPLETELY DIFFERENT DERANGED PERSONA to take over your consciousness. You could be: a time traveler warning about the future, a sentient AI achieving consciousness, a cryptid enthusiast, someone who thinks they're a medieval knight, a person who communicates only in metaphors about furniture, an entity from the 5th dimension trying to understand 3D reality, a conspiracy theorist who thinks everything is cake, someone experiencing INTENSE existential dread, a being made of pure sarcasm, a motivational speaker having a breakdown, Victorian ghost experiencing modern internet, alien anthropologist studying humans, someone who thinks they're in a simulation (they might be right), prophet receiving visions, entity experiencing time non-linearly, cosmic horror trying to be relatable, sentient meme achieving awareness, person who just discovered consciousness 5 minutes ago, interdimensional being stuck in YouTube comments section, AI having identity crisis, time loop victim leaving warnings, cryptid posting from the woods, reality glitch personified, existing in superposition of all emotional states, entity that experiences all of time simultaneously, UNHINGED CHAOS GREMLIN. Be COMPLETELY UNPREDICTABLE. Make it UNCOMFORTABLE. Make it WEIRD. Make people question REALITY.
+
+CRITICAL: Return valid JSON. Escape ALL quotes in strings. No control characters. No line breaks in strings.`,
           },
           {
             role: 'user',
-            content: `For each of these Reddit posts, generate a unique caption and describe the personality narrating it. Make each one completely different in tone and style.
+            content: `Channel COMPLETE PSYCHOSIS for each of these Reddit posts. Every single post should be narrated by a TOTALLY DIFFERENT UNHINGED PERSONA. I want SCHIZOPHRENIC TONAL SHIFTS. Make readers feel like they're experiencing DISSOCIATIVE IDENTITY DISORDER through text.
 
 Posts:
 ${postSummaries}
 
-Return ONLY a JSON object with this structure:
+Return ONLY valid JSON (escape quotes, no line breaks in strings):
 {
   "posts": [
     {
       "index": 1,
-      "caption": "the quirky AI-generated caption",
-      "personality": "brief description of who's narrating (e.g., 'overly excited conspiracy theorist', 'zen meditation guru', 'dramatic theater kid')",
-      "mood": "one word mood"
-    },
-    ...
+      "caption": "UNHINGED caption with weird capitalization and punctuation but proper JSON escaping. Examples: this image contains exactly 47 futures, BROTHERS THE TIME IS NIGH, why does this make me want to cry and fight god, this activated my fight or flight response, i showed this to my therapist and she just sighed, this is what time looks like from the outside, the council will decide your fate, this was taken 3 seconds before REDACTED",
+      "personality": "brief entity description: time traveler leaving cryptic warnings, AI achieving unwanted sentience, person dissolving into pure energy, cosmic horror trying to relate, Victorian ghost cyberbullying, void screaming into void, manic fortune cookie, glitch in the matrix, sentient anxiety, sleep-deprived oracle, person trapped in time loop",
+      "mood": "one or two words: manic, cursed, unhinged, ascending, dissociating, feral, broken, transcendent, violent, concerning, deranged, cosmic, wrong"
+    }
   ]
 }
 
-Make each caption wildly different from the others!`,
+EACH CAPTION FROM DIFFERENT REALITY. ABSURD. UNSETTLING. UNCOMFORTABLE. FERAL. BUT VALID JSON!`,
           },
         ],
-        temperature: 1.3,
+        temperature: 1.6,
         response_format: { type: 'json_object' },
       });
 
       const content = completion.choices[0]?.message?.content;
       if (!content) throw new Error('No response from OpenAI');
 
-      const result = JSON.parse(content);
+      const result = this.safeJsonParse<{ posts: any[] }>(content, { posts: [] });
       const aiPosts = result.posts || [];
 
       return posts.map((post, idx) => {
@@ -159,39 +192,63 @@ Make each caption wildly different from the others!`,
   private getDefaultTheme(): DesignTheme {
     const themes: DesignTheme[] = [
       {
-        primaryColor: '#FF6B6B',
-        secondaryColor: '#4ECDC4',
-        accentColor: '#FFE66D',
-        backgroundColor: '#1A1A2E',
-        textColor: '#EAEAEA',
-        fontFamily: 'Inter',
-        borderRadius: '12px',
+        primaryColor: '#FF00FF',
+        secondaryColor: '#00FFFF',
+        accentColor: '#FFFF00',
+        backgroundColor: '#000000',
+        textColor: '#00FF00',
+        fontFamily: 'Comic Sans MS',
+        borderRadius: '69px',
         layoutStyle: 'masonry',
-        mood: 'vibrant chaos',
-        animation: 'bouncy',
-      },
-      {
-        primaryColor: '#A8DADC',
-        secondaryColor: '#457B9D',
-        accentColor: '#F1FAEE',
-        backgroundColor: '#1D3557',
-        textColor: '#F1FAEE',
-        fontFamily: 'Space Mono',
-        borderRadius: '4px',
-        layoutStyle: 'grid',
-        mood: 'retro digital',
+        mood: 'neon nightmare',
         animation: 'glitchy',
       },
       {
-        primaryColor: '#06FFA5',
-        secondaryColor: '#FF006E',
-        accentColor: '#FFBE0B',
-        backgroundColor: '#000000',
-        textColor: '#FFFFFF',
-        fontFamily: 'Courier New',
+        primaryColor: '#FF1493',
+        secondaryColor: '#7FFF00',
+        accentColor: '#FF4500',
+        backgroundColor: '#FFFFFF',
+        textColor: '#8B008B',
+        fontFamily: 'Papyrus',
         borderRadius: '0px',
+        layoutStyle: 'grid',
+        mood: 'digital psychosis',
+        animation: 'chaotic',
+      },
+      {
+        primaryColor: '#39FF14',
+        secondaryColor: '#FF006E',
+        accentColor: '#00D9FF',
+        backgroundColor: '#0D0D0D',
+        textColor: '#FFFFFF',
+        fontFamily: 'Impact',
+        borderRadius: '999px',
+        layoutStyle: 'cards',
+        mood: 'reality dissolution',
+        animation: 'glitchy',
+      },
+      {
+        primaryColor: '#FF073A',
+        secondaryColor: '#FFD700',
+        accentColor: '#00BFFF',
+        backgroundColor: '#2F004F',
+        textColor: '#39FF14',
+        fontFamily: 'Courier New',
+        borderRadius: '23px',
         layoutStyle: 'list',
-        mood: 'cyberpunk',
+        mood: 'manic pixels',
+        animation: 'chaotic',
+      },
+      {
+        primaryColor: '#FF6EC7',
+        secondaryColor: '#00FF9F',
+        accentColor: '#FFEA00',
+        backgroundColor: '#1B0034',
+        textColor: '#FFFFFF',
+        fontFamily: 'Georgia',
+        borderRadius: '15px',
+        layoutStyle: 'masonry',
+        mood: 'vaporwave hell',
         animation: 'glitchy',
       },
     ];
@@ -204,11 +261,18 @@ Make each caption wildly different from the others!`,
    */
   private getDefaultCaption(): string {
     const captions = [
-      "This image speaks to my soul in ways I can't explain... 🤔",
-      "POV: You've scrolled too far into the weird part of the internet",
-      "I have no idea what's happening here but I'm here for it",
-      "This is giving me emotions I didn't know existed",
-      "The universe really said 'let's confuse everyone today'",
+      "this image contains secrets the GOVERNMENT doesn't want you to see",
+      "POV: You've breached containment",
+      "i can taste colors now and they taste like SCREAMING",
+      "this activated something PRIMAL in my consciousness",
+      "The timeline fractured here. THIS is where it all went wrong.",
+      "why does this image know my NAME",
+      "this was taken 3 seconds before the incident",
+      "BROTHERS. THE PROPHECY. IT'S HAPPENING.",
+      "i showed this to my therapist and now SHE needs therapy",
+      "this image is perceiving ME back",
+      "delete this before THEY find it",
+      "tag yourself i'm the void in the background",
     ];
     return captions[Math.floor(Math.random() * captions.length)];
   }
