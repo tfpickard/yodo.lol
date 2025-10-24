@@ -77,10 +77,11 @@ class RedditService {
     limit: number
   ): Promise<RedditPost[]> {
     try {
-      const url = `https://www.reddit.com/r/${subredditName}/hot.json?limit=${limit * 2}`; // Fetch extra to account for filtering
+      // Use old.reddit.com to avoid 403 errors from Reddit's API restrictions
+      const url = `https://old.reddit.com/r/${subredditName}/hot.json?limit=${limit * 2}`; // Fetch extra to account for filtering
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'YodoLol:v1.0.0 (web app)',
+          'User-Agent': 'Mozilla/5.0 (compatible; YodoLol/1.0; +https://yodo.lol)',
         },
         next: { revalidate: 0 }, // Don't cache in Next.js
       });
