@@ -37,7 +37,70 @@ export interface RedditPost {
   isVideo: boolean;
 }
 
+interface RedditOAuthToken {
+  access_token: string;
+  expires_at: number;
+}
+
 class RedditService {
+  private accessToken: RedditOAuthToken | null = null;
+  private readonly clientId: string;
+  private readonly clientSecret: string;
+
+  constructor() {
+    // Get Reddit API credentials from environment variables
+    this.clientId = process.env.REDDIT_CLIENT_ID || '';
+    this.clientSecret = process.env.REDDIT_CLIENT_SECRET || '';
+  }
+
+  /**
+   * Get OAuth access token for Reddit API
+   */
+  private async getAccessToken(): Promise<string | null> {
+    // Return cached token if still valid
+    if (this.accessToken && this.accessToken.expires_at > Date.now()) {
+      return this.accessToken.access_token;
+    }
+
+    // If no credentials, return null (will fall back to unauthenticated access)
+    if (!this.clientId || !this.clientSecret) {
+      console.warn('Reddit API credentials not configured. Using unauthenticated access (limited).');
+      return null;
+    }
+
+    try {
+      // Get new token using OAuth client credentials flow
+      const auth = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+
+      const response = await fetch('https://www.reddit.com/api/v1/access_token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'yodo.lol/1.0.0',
+        },
+        body: 'grant_type=client_credentials',
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to get Reddit OAuth token: ${response.status}`);
+        return null;
+      }
+
+      const data = await response.json();
+
+      // Cache token (expires in 1 hour, we'll refresh 5 minutes early)
+      this.accessToken = {
+        access_token: data.access_token,
+        expires_at: Date.now() + ((data.expires_in - 300) * 1000),
+      };
+
+      return this.accessToken.access_token;
+    } catch (error) {
+      console.error('Error getting Reddit OAuth token:', error);
+      return null;
+    }
+  }
   /**
    * Fetch trending posts from quirky subreddits using public Reddit JSON API
    * No authentication required!
@@ -77,13 +140,25 @@ class RedditService {
     limit: number
   ): Promise<RedditPost[]> {
     try {
-      // Use old.reddit.com to avoid 403 errors from Reddit's API restrictions
-      const url = `https://old.reddit.com/r/${subredditName}/hot.json?limit=${limit * 2}`; // Fetch extra to account for filtering
+      const token = await this.getAccessToken();
+
+      // Build headers
+      const headers: HeadersInit = {
+        'User-Agent': 'yodo.lol/1.0.0',
+      };
+
+      // Use OAuth API if we have a token
+      let baseUrl = 'https://www.reddit.com';
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        baseUrl = 'https://oauth.reddit.com';
+      }
+
+      const url = `${baseUrl}/r/${subredditName}/hot.json?limit=${limit * 2}&raw_json=1`;
+
       const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; YodoLol/1.0; +https://yodo.lol)',
-        },
-        next: { revalidate: 0 }, // Don't cache in Next.js
+        headers,
+        cache: 'no-store',
       });
 
       if (!response.ok) {
