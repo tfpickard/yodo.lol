@@ -1,5 +1,6 @@
 // Quirky, off-the-wall subreddits for unpredictable content
 const QUIRKY_SUBREDDITS = [
+  // Original chaos
   'hmmm',
   'interdimensionalcable',
   'WhatIsThisThing',
@@ -19,7 +20,28 @@ const QUIRKY_SUBREDDITS = [
   'BeAmazed',
   'Damnthatsinteresting',
   'DidntKnowIWantedThat',
-  'blackmagicfuckery'
+  'blackmagicfuckery',
+
+  // Expanded absurdity
+  'BreadStapledToTrees', // Bread stapled to trees. Literally.
+  'WeWantPlates', // Absurd plate presentation
+  'AssholeDesign', // Malicious design
+  'Justrolledintotheshop', // Automotive nightmares
+  'TreesSuckingAtThings', // Trees failing at tree things
+  'ShowerOrange', // People eating oranges in the shower
+  'PhotoshopBattles', // Creative photoshop edits
+  'ForbiddenSnacks', // Things that look edible but aren't
+  'evilbuildings', // Buildings that look evil
+  'BadUrbanPlanning', // Urban design fails
+  'PointlesslyGendered', // Needlessly gendered products
+  'JustBootThings', // Bootleg/corrupted versions
+  'WTFStockPhotos', // Weird stock photos
+  'TIHI', // Thanks I Hate It
+  'agedlikemilk', // Things that aged badly
+  'Bananaforscale', // Using bananas for scale
+  'MildlyVandalised', // Mild vandalism
+  'shittyfoodporn', // Terrible food photos
+  'ImaginaryMonsters', // Weird imaginary creatures
 ];
 
 export interface RedditPost {
