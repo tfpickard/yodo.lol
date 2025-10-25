@@ -55,15 +55,18 @@ HIST_STAMPS="yyyy-mm-dd"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
     git
+    vi-mode
     docker
     docker-compose
     npm
     node
     yarn
+    pm2
     sudo
     history
     command-not-found
     colored-man-pages
+    fzf
     zsh-autosuggestions
     zsh-syntax-highlighting
 )
@@ -86,6 +89,122 @@ fi
 
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
+
+# Vi Mode Configuration
+# Show vi mode in prompt
+VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
+VI_MODE_SET_CURSOR=true
+
+# Reduce ESC key delay to 0.1 seconds
+export KEYTIMEOUT=1
+
+# Better vi mode experience
+bindkey -v
+# Use vim keys in tab complete menu
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
+
+# Additional useful vi mode bindings
+bindkey '^P' up-history
+bindkey '^N' down-history
+bindkey '^?' backward-delete-char
+bindkey '^h' backward-delete-char
+bindkey '^w' backward-kill-word
+bindkey '^r' history-incremental-search-backward
+
+# FZF Configuration
+# Set up fzf key bindings and fuzzy completion
+export FZF_BASE="$HOME/.fzf"
+
+# FZF default options for better UX
+export FZF_DEFAULT_OPTS="
+--height 40%
+--layout=reverse
+--border
+--inline-info
+--preview 'echo {}'
+--preview-window down:3:hidden:wrap
+--bind '?:toggle-preview'
+--bind 'ctrl-a:select-all'
+--bind 'ctrl-y:execute-silent(echo {+} | xclip -selection clipboard)'
+--color=dark
+--color=fg:-1,bg:-1,hl:#5fff87,fg+:-1,bg+:-1,hl+:#ffaf5f
+--color=info:#af87ff,prompt:#5fff87,pointer:#ff87d7,marker:#ff87d7,spinner:#ff87d7
+"
+
+# Use fd or ag if available for faster searching
+if command -v fd > /dev/null 2>&1; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+elif command -v ag > /dev/null 2>&1; then
+    export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
+# FZF completion options
+export FZF_COMPLETION_TRIGGER='**'
+export FZF_COMPLETION_OPTS='--border --info=inline'
+
+# Better preview for files
+export FZF_CTRL_T_OPTS="
+--preview 'bat --style=numbers --color=always --line-range :500 {} 2> /dev/null || cat {} 2> /dev/null || tree -C {} 2> /dev/null'
+--bind 'ctrl-/:change-preview-window(down|hidden|)'
+"
+
+# Better preview for directories
+export FZF_ALT_C_OPTS="
+--preview 'tree -C {} | head -200'
+"
+
+# Load fzf if installed via git
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# Load fzf if installed via package manager
+[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+[ -f /usr/share/doc/fzf/examples/completion.zsh ] && source /usr/share/doc/fzf/examples/completion.zsh
+
+# Custom FZF functions
+# Fuzzy find and edit file
+fe() {
+    local files
+    files=$(fzf --query="$1" --multi --select-1 --exit-0)
+    [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
+}
+
+# Fuzzy cd into directory
+fcd() {
+    local dir
+    dir=$(find ${1:-.} -type d 2> /dev/null | fzf +m) && cd "$dir"
+}
+
+# Fuzzy kill process
+fkill() {
+    local pid
+    pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
+    if [ "x$pid" != "x" ]; then
+        echo $pid | xargs kill -${1:-9}
+    fi
+}
+
+# Fuzzy git checkout branch
+fgb() {
+    local branches branch
+    branches=$(git branch -a) &&
+    branch=$(echo "$branches" | fzf +s +m -e) &&
+    git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
+# Fuzzy git log browser
+fglog() {
+    git log --graph --color=always \
+        --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+    fzf --ansi --no-sort --reverse --tiebreak=index \
+        --preview 'echo {} | grep -o "[a-f0-9]\{7\}" | head -1 | xargs git show --color=always' \
+        --bind "enter:execute:echo {} | grep -o '[a-f0-9]\{7\}' | head -1 | xargs git show | less -R"
+}
 
 # Set personal aliases, overriding those provided by oh-my-zsh libs,
 # plugins, and themes. Aliases can be placed here, though oh-my-zsh
