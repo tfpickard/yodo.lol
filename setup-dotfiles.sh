@@ -137,6 +137,50 @@ else
     print_info "vim-plug is already installed"
 fi
 
+# Install FZF (fuzzy finder)
+if [ ! -d "$HOME/.fzf" ]; then
+    print_info "Installing FZF (fuzzy finder)..."
+    git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf" > /dev/null 2>&1
+    "$HOME/.fzf/install" --key-bindings --completion --no-update-rc > /dev/null 2>&1
+    print_success "FZF installed"
+else
+    print_info "FZF is already installed"
+fi
+
+# Install optional but recommended packages for enhanced fuzzy search
+print_info "Installing optional packages for enhanced fuzzy search experience..."
+OPTIONAL_PACKAGES=(
+    "fd-find"
+    "ripgrep"
+    "bat"
+    "silversearcher-ag"
+)
+
+for package in "${OPTIONAL_PACKAGES[@]}"; do
+    if ! dpkg -l | grep -q "^ii  $package "; then
+        print_info "Installing $package..."
+        sudo apt-get install -y "$package" > /dev/null 2>&1 || print_warning "Could not install $package (optional)"
+    else
+        print_info "$package is already installed"
+    fi
+done
+
+# Create fd symlink if fd-find is installed (Ubuntu/Debian installs it as fdfind)
+if command -v fdfind > /dev/null 2>&1 && ! command -v fd > /dev/null 2>&1; then
+    print_info "Creating fd symlink..."
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(which fdfind)" "$HOME/.local/bin/fd"
+    print_success "Created fd symlink"
+fi
+
+# Create batcat symlink if bat is installed (Ubuntu/Debian installs it as batcat)
+if command -v batcat > /dev/null 2>&1 && ! command -v bat > /dev/null 2>&1; then
+    print_info "Creating bat symlink..."
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$(which batcat)" "$HOME/.local/bin/bat"
+    print_success "Created bat symlink"
+fi
+
 # Create symlinks for dotfiles
 print_info "Creating symlinks for dotfiles..."
 
@@ -188,5 +232,11 @@ echo "  1. Log out and log back in (or run 'exec zsh') to start using zsh"
 echo "  2. Configure your git user info in ~/.gitconfig.local"
 echo "  3. Start tmux and press prefix + I (Ctrl-a + Shift-i) to install tmux plugins"
 echo "  4. Open vim and run :PlugInstall if you enabled plugins in .vimrc"
+echo ""
+print_info "New features available:"
+echo "  - Vi mode: Press ESC to enter vi command mode in zsh"
+echo "  - FZF fuzzy search: Ctrl-R (history), Ctrl-T (files), Alt-C (directories)"
+echo "  - Custom fuzzy functions: fe (edit), fcd (cd), fkill (kill), fgb (git branch), fglog (git log)"
+echo "  - PM2 plugin: Enhanced completion for PM2 process manager"
 echo ""
 print_info "Enjoy your new setup!"

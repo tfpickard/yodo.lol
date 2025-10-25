@@ -6,10 +6,15 @@ This repository includes a comprehensive set of dotfiles for improved quality of
 
 ### Shell Configuration (.zshrc)
 - **Oh My Zsh** framework with useful plugins
+- **Vi mode** enabled with optimized key bindings
+- **FZF (Fuzzy Finder)** integration for blazing-fast file/directory/history search
 - **Plugins enabled**:
+  - vi-mode (vim keybindings in terminal)
   - git
   - docker & docker-compose
   - npm, node, yarn
+  - pm2 (process manager)
+  - fzf (fuzzy finder integration)
   - sudo
   - history
   - command-not-found
@@ -20,6 +25,7 @@ This repository includes a comprehensive set of dotfiles for improved quality of
 - **Enhanced history** with deduplication and sharing
 - **Better directory navigation** with auto-cd and pushd
 - **Custom key bindings** for improved efficiency
+- **Custom fuzzy search functions** (fe, fcd, fkill, fgb, fglog)
 
 ### Tmux Configuration (.tmux.conf)
 - **Custom prefix**: `Ctrl-a` instead of `Ctrl-b`
@@ -58,11 +64,13 @@ Run the setup script to automatically install and configure everything:
 
 This script will:
 1. Install essential packages (zsh, tmux, vim, git, etc.)
-2. Install Oh My Zsh and plugins
-3. Install Tmux Plugin Manager (TPM)
-4. Install vim-plug for Vim
-5. Create symbolic links to dotfiles
-6. Change your default shell to zsh
+2. Install Oh My Zsh and plugins (autosuggestions, syntax-highlighting)
+3. Install FZF (fuzzy finder) with key bindings
+4. Install optional tools (fd, ripgrep, bat, ag) for enhanced fuzzy search
+5. Install Tmux Plugin Manager (TPM)
+6. Install vim-plug for Vim
+7. Create symbolic links to dotfiles
+8. Change your default shell to zsh
 
 ### Manual Installation
 
@@ -85,12 +93,27 @@ If you prefer to install manually:
    git clone https://github.com/zsh-users/zsh-syntax-highlighting ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
    ```
 
-4. **Install Tmux Plugin Manager**:
+4. **Install FZF and optional tools**:
+   ```bash
+   # Install FZF
+   git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+   ~/.fzf/install --key-bindings --completion --no-update-rc
+
+   # Install optional tools for better fuzzy search
+   sudo apt-get install fd-find ripgrep bat silversearcher-ag
+
+   # Create symlinks for Debian/Ubuntu package names
+   mkdir -p ~/.local/bin
+   ln -sf $(which fdfind) ~/.local/bin/fd
+   ln -sf $(which batcat) ~/.local/bin/bat
+   ```
+
+5. **Install Tmux Plugin Manager**:
    ```bash
    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
    ```
 
-5. **Create symbolic links**:
+6. **Create symbolic links**:
    ```bash
    ln -s $(pwd)/.zshrc ~/.zshrc
    ln -s $(pwd)/.tmux.conf ~/.tmux.conf
@@ -98,7 +121,7 @@ If you prefer to install manually:
    ln -s $(pwd)/.gitconfig ~/.gitconfig
    ```
 
-6. **Change default shell**:
+7. **Change default shell**:
    ```bash
    chsh -s $(which zsh)
    ```
@@ -157,6 +180,63 @@ After installation:
 - `ta` - tmux attach
 - `ts` - tmux new session
 - `tl` - tmux list sessions
+
+### Vi Mode
+
+Vi mode is enabled in zsh, providing vim-like keybindings:
+
+**Insert Mode** (default):
+- Type normally as you would in any shell
+- Press `ESC` to enter command mode
+
+**Command Mode**:
+- `h/j/k/l` - Move cursor left/down/up/right
+- `w/b` - Move forward/backward by word
+- `0/$` - Move to beginning/end of line
+- `i/a` - Enter insert mode before/after cursor
+- `I/A` - Enter insert mode at beginning/end of line
+- `dd` - Delete entire line
+- `cc` - Change entire line
+- `/` - Search forward in history
+- `?` - Search backward in history
+- `v` - Edit command in $EDITOR (vim)
+
+**Universal Keybindings** (work in both modes):
+- `Ctrl-R` - Fuzzy search history with FZF
+- `Ctrl-P/N` - Previous/next command in history
+- `Ctrl-W` - Delete word backward
+- `Ctrl-H` - Backspace
+
+### FZF Fuzzy Search
+
+FZF provides powerful fuzzy finding capabilities:
+
+**Default Key Bindings**:
+- `Ctrl-R` - Fuzzy search command history
+- `Ctrl-T` - Fuzzy search files in current directory tree
+- `Alt-C` - Fuzzy search directories and cd into selected
+
+**Custom Functions**:
+- `fe [query]` - Fuzzy find and edit files in $EDITOR
+- `fcd [path]` - Fuzzy find and cd into directory
+- `fkill` - Fuzzy search and kill processes
+- `fgb` - Fuzzy search and checkout git branches
+- `fglog` - Interactive fuzzy git log browser
+
+**FZF Navigation** (inside FZF interface):
+- `Ctrl-J/K` or arrow keys - Move selection up/down
+- `Enter` - Select item
+- `Tab` - Multi-select (when available)
+- `Ctrl-A` - Select all
+- `?` - Toggle preview window
+- `Ctrl-/` - Toggle preview window position
+
+**Fuzzy Completion**:
+Type `**` and press `Tab` for fuzzy completion:
+- `vim **<Tab>` - Fuzzy find files to edit
+- `cd **<Tab>` - Fuzzy find directories to cd
+- `kill -9 **<Tab>` - Fuzzy find processes to kill
+- `ssh **<Tab>` - Fuzzy find from ssh known hosts
 
 ### Tmux Key Bindings
 
