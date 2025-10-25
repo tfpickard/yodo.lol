@@ -315,11 +315,11 @@ export default function DynamicFeed({
     ThemeEngine.applyTheme(theme);
   }, [theme]);
 
-  // Auto-refresh theme every 15 seconds for MAXIMUM CHAOS
+  // Auto-refresh theme every 45 seconds for MAXIMUM CHAOS
   useEffect(() => {
     const interval = setInterval(() => {
       changeTheme();
-    }, 15000); // 15 seconds - MUCH MORE AGGRESSIVE
+    }, 45000); // 45 seconds
 
     return () => clearInterval(interval);
   }, []);
