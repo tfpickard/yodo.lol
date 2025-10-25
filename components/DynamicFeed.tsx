@@ -117,7 +117,7 @@ export default function DynamicFeed({
     "My reflection owes me an apology",
     "The fridge hums in Morse for “hunger.”",
     "We buried the silence but it crawled back",
-    "Your voice left fingerprints",
+    "Ur voice left fingerprints",
     "The wallpaper is learning my passwords",
     "I saw your heartbeat on Bluetooth",
     "The air tastes like reboot",
