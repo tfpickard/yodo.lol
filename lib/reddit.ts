@@ -211,9 +211,12 @@ class RedditService {
       });
 
       if (!response.ok) {
-        console.warn(
-          `Failed to fetch from r/${subredditName}: ${response.status}`,
-        );
+        // Only log non-404 errors as warnings (404 is expected for private/banned subreddits)
+        if (response.status !== 404) {
+          console.warn(
+            `Failed to fetch from r/${subredditName}: ${response.status}`,
+          );
+        }
         return [];
       }
 
