@@ -77,7 +77,7 @@ class OpenAIService {
     try {
       const client = this.getClient();
       const completion = await client.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -109,6 +109,7 @@ NO RULES. NO TASTE. ONLY CHAOS. BUT VALID JSON!`,
           },
         ],
         temperature: 1.5,
+        max_tokens: 800,
         response_format: { type: 'json_object' },
       });
 
@@ -146,7 +147,7 @@ NO RULES. NO TASTE. ONLY CHAOS. BUT VALID JSON!`,
       ).join('\n');
 
       const completion = await client.chat.completions.create({
-        model: 'gpt-4-turbo-preview',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -177,6 +178,7 @@ EACH CAPTION FROM DIFFERENT REALITY. ABSURD. UNSETTLING. UNCOMFORTABLE. FERAL. B
           },
         ],
         temperature: 1.6,
+        max_tokens: 2500,
         response_format: { type: 'json_object' },
       });
 
