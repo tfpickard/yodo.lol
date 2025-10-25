@@ -178,11 +178,24 @@ EACH CAPTION FROM DIFFERENT REALITY. ABSURD. UNSETTLING. UNCOMFORTABLE. FERAL. B
           },
         ],
         temperature: 1.6,
-        max_tokens: 2500,
+        max_tokens: 8000,
         response_format: { type: 'json_object' },
       });
 
-      const content = completion.choices[0]?.message?.content;
+      const choice = completion.choices[0];
+      const content = choice?.message?.content;
+
+      // Check if response was truncated
+      if (choice?.finish_reason === 'length') {
+        console.warn('OpenAI response was truncated due to max_tokens limit. Using fallback captions.');
+        return posts.map(post => ({
+          ...post,
+          aiCaption: this.getDefaultCaption(),
+          aiPersonality: 'mysterious entity',
+          mood: 'enigmatic',
+        }));
+      }
+
       if (!content) {
         console.error('No content from OpenAI for post enhancement');
         return posts.map(post => ({
