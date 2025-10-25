@@ -77,7 +77,7 @@ class OpenAIService {
     try {
       const client = this.getClient();
       const completion = await client.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-5-nano',
         messages: [
           {
             role: 'system',
@@ -147,7 +147,7 @@ NO RULES. NO TASTE. ONLY CHAOS. BUT VALID JSON!`,
       ).join('\n');
 
       const completion = await client.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-5-nano',
         messages: [
           {
             role: 'system',
