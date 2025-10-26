@@ -155,10 +155,12 @@ export default function FeedPost({ post, index, animationStyle }: FeedPostProps)
           src={post.imageUrl}
           alt={post.title}
           fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover"
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageError(true)}
-          unoptimized
+          loading={index < 3 ? "eager" : "lazy"}
+          priority={index < 3}
         />
       </div>
 
