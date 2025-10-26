@@ -1,20 +1,32 @@
 import { redditService } from '@/lib/reddit';
-import { openaiService } from '@/lib/openai';
+import { openaiService, EnhancedPost, DesignTheme } from '@/lib/openai';
 import DynamicFeed from '@/components/DynamicFeed';
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Switch to ISR (Incremental Static Regeneration) for better performance
+// Page will be regenerated every 2 minutes instead of on every request
+export const revalidate = 120; // 2 minutes
 
 export default async function Home() {
   try {
-    // Fetch Reddit posts
-    const posts = await redditService.fetchQuirkyPosts(15);
+    // Check cache for posts and theme
+    let enhancedPosts = cache.get<EnhancedPost[]>(CACHE_KEYS.FEED + '_15', CACHE_TTL.FEED);
+    let theme = cache.get<DesignTheme>(CACHE_KEYS.THEME, CACHE_TTL.THEME);
 
-    // Enhance posts with AI
-    const enhancedPosts = await openaiService.enhancePostsWithAI(posts);
+    // Fetch Reddit posts if not in cache
+    if (!enhancedPosts) {
+      console.log('Fetching fresh posts for page load');
+      const posts = await redditService.fetchQuirkyPosts(15);
+      enhancedPosts = await openaiService.enhancePostsWithAI(posts);
+      cache.set(CACHE_KEYS.FEED + '_15', enhancedPosts);
+    }
 
-    // Generate AI theme
-    const theme = await openaiService.generateDesignTheme();
+    // Generate AI theme if not in cache
+    if (!theme) {
+      console.log('Generating fresh theme for page load');
+      theme = await openaiService.generateDesignTheme();
+      cache.set(CACHE_KEYS.THEME, theme);
+    }
 
     return (
       <DynamicFeed

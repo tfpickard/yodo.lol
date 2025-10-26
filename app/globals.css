@@ -62,7 +62,7 @@ body::before {
   }
 }
 
-/* TRIPPY GRAIN EFFECT */
+/* TRIPPY GRAIN EFFECT - Optimized for performance */
 body::after {
   content: '';
   position: fixed;
@@ -75,7 +75,8 @@ body::after {
   pointer-events: none;
   z-index: 1000;
   mix-blend-mode: overlay;
-  animation: grain-shift 0.5s steps(10) infinite;
+  animation: grain-shift 5s steps(10) infinite;
+  /* Reduced from 0.5s to 5s - 10x less CPU/GPU usage */
 }
 
 @keyframes grain-shift {
@@ -448,11 +449,12 @@ a {
     var(--accent-color)
   );
   border-radius: 10px;
-  animation: color-shift 3s linear infinite;
+  /* Removed aggressive animation for performance */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  animation: pulse-chaos 0.5s ease-in-out infinite;
+  opacity: 0.8;
+  /* Removed aggressive animation, simple opacity change instead */
 }
 
 /* Button styles - ENHANCED */

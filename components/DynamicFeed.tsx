@@ -63,7 +63,7 @@ export default function DynamicFeed({
   const [chaosSymbol, setChaosSymbol] = useState(chaosSymbols[0]);
   const [warpSymbol, setWarpSymbol] = useState(warpSymbols[0]);
 
-  // Rotate symbols every 2 seconds for maximum mysticism
+  // Rotate symbols every 15 seconds (reduced from 2s for performance)
   useEffect(() => {
     const interval = setInterval(() => {
       setVoidSymbol(
@@ -75,7 +75,7 @@ export default function DynamicFeed({
       setWarpSymbol(
         warpSymbols[Math.floor(Math.random() * warpSymbols.length)],
       );
-    }, 2000);
+    }, 15000);
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -315,16 +315,9 @@ export default function DynamicFeed({
     ThemeEngine.applyTheme(theme);
   }, [theme]);
 
-  // Auto-refresh theme every 45 seconds for MAXIMUM CHAOS
-  useEffect(() => {
-    const interval = setInterval(() => {
-      changeTheme();
-    }, 45000); // 45 seconds
+  // Removed aggressive auto-refresh - users can manually refresh theme with button
 
-    return () => clearInterval(interval);
-  }, []);
-
-  // Random title effects that change every 3 seconds
+  // Random title effects that change every 20 seconds (reduced from 3s for performance)
   useEffect(() => {
     const effects = [
       "glitch-text",
@@ -335,24 +328,24 @@ export default function DynamicFeed({
     ];
     const interval = setInterval(() => {
       setTitleClass(effects[Math.floor(Math.random() * effects.length)]);
-    }, 3000);
+    }, 20000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Random title text changes every 4 seconds
+  // Random title text changes every 30 seconds (reduced from 4s for performance)
   useEffect(() => {
     const interval = setInterval(() => {
       const randomTitle =
         titleVariations[Math.floor(Math.random() * titleVariations.length)];
       setCurrentTitle(randomTitle);
-    }, 4000);
+    }, 30000);
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Random subtitle changes every 5 seconds
+  // Random subtitle changes every 45 seconds (reduced from 5s for performance)
   useEffect(() => {
     const interval = setInterval(() => {
       const randomSubtitle =
@@ -360,7 +353,7 @@ export default function DynamicFeed({
           Math.floor(Math.random() * subtitleVariations.length)
         ];
       setCurrentSubtitle(randomSubtitle);
-    }, 5000);
+    }, 45000);
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -507,12 +500,12 @@ export default function DynamicFeed({
           </button>
         </div>
 
-        {/* Auto-morph indicator */}
+        {/* Manual control message */}
         <p
           className="mt-4 text-sm opacity-50"
           style={{ color: "var(--text-color)" }}
         >
-          ⚠️ Reality shifts every 15 seconds ⚠️
+          🎨 Click buttons to morph reality 🎨
         </p>
       </motion.header>
 
